@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Our Portrait Gallery</title>
+  <meta name="description" content="A simple, fast gallery of our portraits." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#0b0b0c; 
+      --card:#121214; 
+      --text:#f7f7f7; 
+      --muted:#c5c5c5; 
+      --accent:#ff3b3b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 80% -10%, #222 0%, #111 60%, #0b0b0c 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 48px 20px 10px;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0 0 6px;
+      letter-spacing: .3px;
+      font-weight: 700;
+    }
+    header p { margin: 0; color: var(--muted); }
+    .container {
+      width: min(1200px, 94vw);
+      margin: 20px auto 60px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .tile {
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+      background: #0f0f10;
+      box-shadow: 0 6px 24px rgba(0,0,0,.45);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .tile:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,.55); }
+    .tile img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+    }
+    footer {
+      color: var(--muted);
+      text-align: center;
+      padding: 24px 16px 50px;
+    }
+    /* Lightbox */
+    .lightbox {
+      position: fixed; inset: 0; display: none;
+      background: rgba(0,0,0,.9); z-index: 50;
+      align-items: center; justify-content: center;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox img {
+      max-width: 92vw; max-height: 90vh; width: auto; height: auto;
+      border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,.6);
+    }
+    .controls {
+      position: fixed; inset: 0; pointer-events: none;
+    }
+    .btn {
+      pointer-events: auto;
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.15);
+      color: var(--text); padding: 10px 14px;
+      border-radius: 12px; font-weight: 600; cursor: pointer;
+      user-select: none;
+    }
+    .btn:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .prev { left: 18px; } .next { right: 18px; }
+    .close { top: 16px; right: 16px; transform: none; }
+    .hint { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); color: var(--muted); font-size: .9rem; }
+    a,button { -webkit-tap-highlight-color: transparent; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Our Portrait Gallery</h1>
+    <p>Tap a photo to view full size. Use ◀ ▶ keys to navigate.</p>
+  </header>
+
+  <main class="container">
+    <section aria-label="Photo gallery" class="grid">
+      <figure class="tile"><img src="images/photo1.png" alt="Portrait 1"></figure><figure class="tile"><img src="images/photo2.png" alt="Portrait 2"></figure><figure class="tile"><img src="images/photo3.png" alt="Portrait 3"></figure><figure class="tile"><img src="images/photo4.png" alt="Portrait 4"></figure><figure class="tile"><img src="images/photo5.png" alt="Portrait 5"></figure>
+    </section>
+  </main>
+
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <img id="lightbox-image" src="" alt="Large view">
+    <div class="controls">
+      <button class="btn prev" aria-label="Previous photo" id="prevBtn">◀</button>
+      <button class="btn next" aria-label="Next photo" id="nextBtn">▶</button>
+      <button class="btn close" aria-label="Close viewer" id="closeBtn">✕</button>
+      <div class="hint">Press Esc to close</div>
+    </div>
+  </div>
+
+  <footer>© 2025 — Made with ❤️</footer>
+
+  <script>
+    const images = ["photo1.png", "photo2.png", "photo3.png", "photo4.png", "photo5.png"];
+    const tiles = Array.from(document.querySelectorAll('.tile img'));
+    const box = document.getElementById('lightbox');
+    const large = document.getElementById('lightbox-image');
+    const prev = document.getElementById('prevBtn');
+    const next = document.getElementById('nextBtn');
+    const close = document.getElementById('closeBtn');
+    let idx = 0;
+
+    function open(i) {
+      idx = i;
+      large.src = 'images/' + images[idx];
+      box.classList.add('open');
+      box.setAttribute('aria-hidden', 'false');
+    }
+    function move(d) {
+      idx = (idx + d + images.length) % images.length;
+      large.src = 'images/' + images[idx];
+    }
+    function exit() {
+      box.classList.remove('open');
+      box.setAttribute('aria-hidden', 'true');
+      large.src = '';
+    }
+
+    tiles.forEach((img, i) => img.addEventListener('click', () => open(i)));
+    prev.addEventListener('click', () => move(-1));
+    next.addEventListener('click', () => move(1));
+    close.addEventListener('click', exit);
+    box.addEventListener('click', (e) => { if (e.target === box) exit(); });
+    window.addEventListener('keydown', (e) => {
+      if (!box.classList.contains('open')) return;
+      if (e.key === 'Escape') exit();
+      if (e.key === 'ArrowRight') move(1);
+      if (e.key === 'ArrowLeft') move(-1);
+    });
+  </script>
+</body>
+</html>
